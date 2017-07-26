@@ -1,0 +1,60 @@
+########################################################################
+## JSON API data to Hive tables 
+########################################################################
+
+@Step 1: wget -S -q -O - http://xxxxx >rag.json; -- ## Sending the complete json URL out put to the rag.json 
+
+@Step 2: sed 's/.//;s/.$//' rag.json >firstlast.json; --## Removing first and last [] brackets to avoid the array struture  
+
+@Step 3: sed 's/},{/'}'\n'{'/g'  firstlast.json  >test.json; -- ## Where object start in next line (Each row data ) 
+
+##########################################################################
+
+--Actual URL output  
+
+[{"Non_IRT_Release":null,"Product_Owner":null,"Priority":"P0","Rank_Within_Priority":0,"Requirement_Name":"test single and mutli","multi_value":"multi 1,multi 3","Primary_DE_Manager":"samanoha","PRD_EDCS":null,"TME":null,"Product_Line_Manager":"samanoha","Project_Code_Name":null,"Requirement_ID":"RM_SEGMENT_115662","Last_Modifed_Date":"2017-03-13 14:47:20.0","single_value":"single 2","number_value":null,"Marketed":"13","Description":"desc","Product_Manager":"samanoha","Source_of_Requirement":"Engineering"},{"Non_IRT_Release":null,"Product_Owner":null,"Priority":"P0","Rank_Within_Priority":0,"Requirement_Name":"test-filter 1","multi_value":"multi 1,multi 3","Primary_DE_Manager":"samanoha","PRD_EDCS":null,"TME":null,"Product_Line_Manager":"samanoha","Project_Code_Name":null,"Requirement_ID":"RM_SEGMENT_115937","Last_Modifed_Date":"2017-03-23 15:42:56.0","single_value":"single 2","number_value":"12","Marketed":"13","Description":"desc","Product_Manager":"samanoha","Source_of_Requirement":"Engineering"},{"Non_IRT_Release":null,"Product_Owner":null,"Priority":"P0","Rank_Within_Priority":0,"Requirement_Name":"test - filter 2","multi_value":"multi 1,multi 3","Primary_DE_Manager":"samanoha","PRD_EDCS":null,"TME":null,"Product_Line_Manager":"samanoha","Project_Code_Name":null,"Requirement_ID":"RM_SEGMENT_115938","Last_Modifed_Date":"2017-03-23 15:42:57.0","single_value":"single 2","number_value":"0","Marketed":"13","Description":"desc","Product_Manager":"samanoha","Source_of_Requirement":"Engineering"}]
+
+-- After three steps 
+
+{"Non_IRT_Release":null,"Product_Owner":null,"Priority":"P0","Rank_Within_Priority":0,"Requirement_Name":"test single and mutli","multi_value":"multi 1,multi 3","Primary_DE_Manager":"samanoha","PRD_EDCS":null,"TME":null,"Product_Line_Manager":"samanoha","Project_Code_Name":null,"Requirement_ID":"RM_SEGMENT_115662","Last_Modifed_Date":"2017-03-13 14:47:20.0","single_value":"single 2","number_value":null,"Marketed":"13","Description":"desc","Product_Manager":"samanoha","Source_of_Requirement":"Engineering"},
+{"Non_IRT_Release":null,"Product_Owner":null,"Priority":"P0","Rank_Within_Priority":0,"Requirement_Name":"test-filter 1","multi_value":"multi 1,multi 3","Primary_DE_Manager":"samanoha","PRD_EDCS":null,"TME":null,"Product_Line_Manager":"samanoha","Project_Code_Name":null,"Requirement_ID":"RM_SEGMENT_115937","Last_Modifed_Date":"2017-03-23 15:42:56.0","single_value":"single 2","number_value":"12","Marketed":"13","Description":"desc","Product_Manager":"samanoha","Source_of_Requirement":"Engineering"},
+{"Non_IRT_Release":null,"Product_Owner":null,"Priority":"P0","Rank_Within_Priority":0,"Requirement_Name":"test - filter 2","multi_value":"multi 1,multi 3","Primary_DE_Manager":"samanoha","PRD_EDCS":null,"TME":null,"Product_Line_Manager":"samanoha","Project_Code_Name":null,"Requirement_ID":"RM_SEGMENT_115938","Last_Modifed_Date":"2017-03-23 15:42:57.0","single_value":"single 2","number_value":"0","Marketed":"13","Description":"desc","Product_Manager":"samanoha","Source_of_Requirement":"Engineering"}
+
+#########################################################################
+
+-- HQL code 
+
+drop table XXX.json_test1 ;
+
+add jar /users/XXX/LIB/json-serde-1.3.8-jar-with-dependencies.jar; -- ## added jar in this location 
+
+CREATE TABLE XXXX.json_test1
+(
+Non_IRT_Release string,
+Product_Owner string,
+Priority STRING,
+Rank_Within_Priority string,
+Requirement_Name STRING,
+multi_value string,
+Primary_DE_Manager string,
+PRD_EDCS string,
+TME string,
+Product_Line_Manager string,
+Project_Code_Name string,
+Requirement_ID STRING,
+Last_Modifed_Date date,
+single_value STRING,
+number_value int,
+Marketed int,
+Description string,
+Product_Manager string,
+Source_of_Requirement string
+)
+ROW FORMAT SERDE 'org.openx.data.jsonserde.JsonSerDe'; -- ## Serde in the create table 
+
+load data local inpath '/users/hdpvemt/test.json' into table XXX.json_test1; -- ## saved  above process output in the test json 
+
+
+select * from XXX.json_test1; 
+
+###########################################################################
